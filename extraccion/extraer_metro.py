@@ -9,11 +9,18 @@ import logging
 logging.basicConfig(level=logging.INFO) # configura el SISTEMA de logs
 logger = logging.getLogger(__name__)    # crea TU logger personal
 
-UUID_SIMPLE = "0e8ffe58-28bb-4dde-afcd-e5f5b4de4ccb"
-
-COLUMNAS_ESPERADAS = {"fecha", "anio", "mes", "linea", "estacion", "afluencia"}
-
-ARCHIVO_SALIDA = "metro_simple_raw.csv"
+FUENTES = {
+    "simple":{
+        "uuid": "0e8ffe58-28bb-4dde-afcd-e5f5b4de4ccb",
+        "salida": "metro_simple_raw.csv",
+        "columnas" : {"fecha", "anio", "mes", "linea", "estacion", "afluencia"},
+    },
+    "desglosada": {
+        "uuid" : "cce544e1-dc6b-42b4-bc27-0d8e6eb3ed72",
+        "salida": "metro_desglosada_raw.csv",
+        "columnas": {"fecha", "anio", "mes", "linea", "estacion", "afluencia", "tipo_pago"}
+    },
+}
 
 def encontrar_recurso(recursos, uuid):
     # next(...) significa: "dame el primero que salga de ese generador"
@@ -30,14 +37,14 @@ def validar_recurso(recurso):
 url = "https://datos.cdmx.gob.mx/api/3/action/package_show"
 params = {"id": "afluencia-diaria-del-metro-cdmx"}
 
-def main():
+def extraer(fuente):
     response = requests.get(url, params=params)
     # raise_for_status: Revisa el código HTTP de la respuesta.
     response.raise_for_status()
     package_data = response.json()
     recursos = package_data["result"]["resources"]
     
-    recurso = encontrar_recurso(recursos, UUID_SIMPLE)
+    recurso = encontrar_recurso(recursos, fuente["uuid"])
     validar_recurso(recurso)
     logger.info("Recurso encontrado: %s", recurso["name"])
 
@@ -46,14 +53,19 @@ def main():
     logger.info("Descargando %s...", url_descarga)
     resp.raise_for_status()
     
-    with open(ARCHIVO_SALIDA, "wb") as f: # write binary (wb)
+    with open(fuente["salida"], "wb") as f: # write binary (wb)
         f.write(resp.content)
     
     # Sin ningún encoding, pandas asume UTF-8 por defecto, Latin-1 acepta cualquier byte sin quejarse.
-    df = pd.read_csv(ARCHIVO_SALIDA, encoding="latin-1")
-    if set(df.columns) != COLUMNAS_ESPERADAS:
+    df = pd.read_csv(fuente["salida"], encoding="latin-1")
+    if set(df.columns) != fuente["columnas"]:
         raise ValueError(f"Esquema inesperado. Llegaron: {set(df.columns)}")
     logger.info("Descarga y validación completa")
+
+def main():
+    for nombre, fuente in FUENTES.items():
+        logger.info("Procesando fuente: %s", nombre)
+        extraer(fuente)
     
 # ejecuta main() solo si me están corriendo directamente, no si me están importando
 if __name__ == "__main__": main()
