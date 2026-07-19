@@ -4,3 +4,12 @@ venv/
 *.xlsx
 __pycache__/
 .env
+venv*/
+.vscode/
+dbt/**/target/
+dbt/**/logs/
+dbt/logs/
+# dbt temporales
+target/
+dbt_packages/
+logs/

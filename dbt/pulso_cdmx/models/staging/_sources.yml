@@ -1,0 +1,12 @@
+version: 2
+
+sources:
+  - name: raw
+    description: "Tablas crudas cargadas desde GCS, espejo de los CSV del portal CDMX"
+    database: pulso-cdmx
+    schema: raw
+    tables:
+      - name: metro_simple_raw
+        description: "Afluencia diaria por fecha-linea-estacion, 2010-2026"
+      - name: metro_desglosada_raw
+        description: "Afluencia diaria por fecha-linea-estacion-tipo_pago, 2021-2026"

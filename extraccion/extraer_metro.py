@@ -74,16 +74,11 @@ def main():
 
 def subir_a_gcs(contenido, nombre_destino):
     """sube bytes a un objeto en el bucket de GCS"""
-    # Abre la conexión con Google Cloud Storage. storage.Client() es tu "teléfono" a GCS.
     client = storage.Client() # (1) abres Drive
-    # Le dice al cliente cuál bucket quieres usar, por nombre. esto no sube nada todavía, solo apunta al bucket.
     bucket = client.bucket(BUCKET) # (2) eliges la carpeta
-    # voy a poner un archivo llamado X en esta carpeta". Todavía no existe — solo estás nombrando el espacio donde va a vivir.
     blob = bucket.blob(nombre_destino) # (3) nombras el archivo
-    # Toma contenido (los bytes de tu CSV, que vienen de resp.content) y los sube al blob. 
     blob.upload_from_string(contenido) # (4) subes los datos
-    # Deja el rastro en el log. Ese gs:// es la forma en que Google nombra rutas en Storage
-    logger.info("Subido a gs://%s/%s", BUCKET, nombre_destino)
+    logger.info("Subido a gs://%s/%s", BUCKET, nombre_destino) # (5) Deja el rastro en el log
 
 # ejecuta main() solo si me están corriendo directamente, no si me están importando
 if __name__ == "__main__": main()
