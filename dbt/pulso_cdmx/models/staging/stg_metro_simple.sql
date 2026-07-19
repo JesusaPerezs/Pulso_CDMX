@@ -20,6 +20,17 @@ limpio as (
             'Ãº', 'ú') as estacion,
         afluencia
     from fuente
+),
+marcado as (
+    select *,
+        case
+            when estacion = 'Oceanía'
+                and linea = 'Linea B'
+                and fecha between '2020-12-01' and '2020-12-31'
+                then 'revisar_mislabeling_dic2020'
+            else 'ok'
+        end as calidad_dato
+    from limpio
 )
 
-select * from limpio
+select * from marcado
