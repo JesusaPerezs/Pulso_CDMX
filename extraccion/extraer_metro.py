@@ -1,6 +1,7 @@
 import requests
 import pandas as pd
 import logging
+from google.cloud import storage
 
 # El log te dice cuándo (timestamp), qué tan grave (INFO), y de dónde (__main__).
 # logging puede escribir a un archivo .log que queda guardado.
@@ -21,6 +22,9 @@ FUENTES = {
         "columnas": {"fecha", "anio", "mes", "linea", "estacion", "afluencia", "tipo_pago"}
     },
 }
+
+# Un bucket es como una carpeta raíz en Drive — un contenedor con nombre único.
+BUCKET = "pulso-cdmx-raw-jesus"
 
 def encontrar_recurso(recursos, uuid):
     # next(...) significa: "dame el primero que salga de ese generador"
@@ -61,11 +65,25 @@ def extraer(fuente):
     if set(df.columns) != fuente["columnas"]:
         raise ValueError(f"Esquema inesperado. Llegaron: {set(df.columns)}")
     logger.info("Descarga y validación completa")
+    subir_a_gcs(resp.content, fuente["salida"])
 
 def main():
     for nombre, fuente in FUENTES.items():
         logger.info("Procesando fuente: %s", nombre)
         extraer(fuente)
-    
+
+def subir_a_gcs(contenido, nombre_destino):
+    """sube bytes a un objeto en el bucket de GCS"""
+    # Abre la conexión con Google Cloud Storage. storage.Client() es tu "teléfono" a GCS.
+    client = storage.Client() # (1) abres Drive
+    # Le dice al cliente cuál bucket quieres usar, por nombre. esto no sube nada todavía, solo apunta al bucket.
+    bucket = client.bucket(BUCKET) # (2) eliges la carpeta
+    # voy a poner un archivo llamado X en esta carpeta". Todavía no existe — solo estás nombrando el espacio donde va a vivir.
+    blob = bucket.blob(nombre_destino) # (3) nombras el archivo
+    # Toma contenido (los bytes de tu CSV, que vienen de resp.content) y los sube al blob. 
+    blob.upload_from_string(contenido) # (4) subes los datos
+    # Deja el rastro en el log. Ese gs:// es la forma en que Google nombra rutas en Storage
+    logger.info("Subido a gs://%s/%s", BUCKET, nombre_destino)
+
 # ejecuta main() solo si me están corriendo directamente, no si me están importando
 if __name__ == "__main__": main()
