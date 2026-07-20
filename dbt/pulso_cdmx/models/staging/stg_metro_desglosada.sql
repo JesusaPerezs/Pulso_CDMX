@@ -1,5 +1,6 @@
 with fuente as (
-    select * from {{ source('raw', 'metro_desglosada_raw') }}
+    select * 
+    from {{ source('raw', 'metro_desglosada_raw') }}
 ),
 
 limpio as (
