@@ -1,0 +1,10 @@
+pulso_cdmx:
+  target: dev
+  outputs:
+    dev:
+      type: bigquery
+      method: oauth
+      project: pulso-cdmx
+      dataset: dbt_ci
+      location: us-west1
+      threads: 4
