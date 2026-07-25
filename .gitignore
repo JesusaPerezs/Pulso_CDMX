@@ -13,3 +13,9 @@ dbt/logs/
 target/
 dbt_packages/
 logs/
+
+# Airflow
+airflow/logs/
+airflow/config/airflow.cfg
+airflow/plugins/
+airflow/.env
