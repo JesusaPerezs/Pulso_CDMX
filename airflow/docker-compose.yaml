@@ -75,6 +75,7 @@ x-airflow-common:
     # for other purpose (development, test and especially production usage) build/extend Airflow image.
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-dbt-bigquery}
     GOOGLE_APPLICATION_CREDENTIALS: /opt/airflow/gcp/application_default_credentials.json
+    GOOGLE_CLOUD_PROJECT: pulso-cdmx
     # The following line can be used to set a custom config file, stored in the local config folder
     AIRFLOW_CONFIG: '/opt/airflow/config/airflow.cfg'
   volumes:
@@ -83,6 +84,7 @@ x-airflow-common:
     - ${AIRFLOW_PROJ_DIR:-.}/config:/opt/airflow/config
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
     - ../dbt/pulso_cdmx:/opt/airflow/dbt
+    - ../extraccion:/opt/airflow/extraccion
     - ${GCP_CREDS_PATH:-~/.config/gcloud/application_default_credentials.json}:/opt/airflow/gcp/application_default_credentials.json:ro
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:

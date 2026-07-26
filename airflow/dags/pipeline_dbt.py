@@ -5,6 +5,7 @@ from datetime import datetime
 # Comando base para llamar dbt dentro del contenedor.
 # Usamos 'python -m dbt.cli.main' porque el ejecutable 'dbt' no está en el PATH.
 DBT_DIR = "/opt/airflow/dbt"
+EXTRACCION_DIR = "/opt/airflow/extraccion"
 DBT = f"python -m dbt.cli.main"
 
 with DAG(
@@ -14,6 +15,13 @@ with DAG(
     catchup=False,
     tags=["pulso_cdmx", "dbt"],
 ) as dag:
+
+    # Corre el script de extracción. cd a /tmp para que el archivo temporal
+    # se escriba en un directorio con permisos de escritura.
+    extraer = BashOperator(
+        task_id="extraer",
+        bash_command=f"cd /tmp && python {EXTRACCION_DIR}/extraer_metro.py",
+    )
 
     dbt_run = BashOperator(
         task_id="dbt_run",
@@ -25,4 +33,4 @@ with DAG(
         bash_command=f"{DBT} test --project-dir {DBT_DIR} --profiles-dir {DBT_DIR}",
     )
 
-    dbt_run >> dbt_test
+    extraer >> dbt_run >> dbt_test
